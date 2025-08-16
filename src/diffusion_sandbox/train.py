@@ -9,7 +9,7 @@ from torch.optim import AdamW
 from diffusion_sandbox.config import load_config
 from diffusion_sandbox.seed import set_all_seeds
 from diffusion_sandbox.logger import RunLogger
-from diffusion_sandbox.data import build_dataloader, SyntheticGMMCfg, SyntheticRingCfg
+from diffusion_sandbox.data import build_dataloader
 from diffusion_sandbox.model import MLPNoisePredictor, DDPM
 from diffusion_sandbox.viz import scatter_2d
 
@@ -42,8 +42,7 @@ def main() -> None:
         n=cfg.data.num_samples,
         batch_size=cfg.data.batch_size,
         num_workers=cfg.data.num_workers,
-        gmm=SyntheticGMMCfg(**cfg.data.gmm.__dict__),
-        ring=SyntheticRingCfg(**cfg.data.ring.__dict__),
+        cfg_kwargs=dict(**getattr(cfg.data, cfg.data.name, {}).__dict__),
         seed=cfg.run.seed,
     )
 
