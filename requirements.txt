@@ -3,9 +3,9 @@ matplotlib>=3.8
 pyyaml>=6.0
 torch>=2.2
 tensorboard>=2.16
-# 可选：开启后自动使用
+# Optional
 mlflow>=2.12
-# 风格工具（开发机用）
+# Coding style tools (for developer)
 black>=24.3
 ruff>=0.4
 isort>=5.13

@@ -13,7 +13,7 @@ except Exception:  # pragma: no cover
 
 
 class RunLogger:
-    """统一管理 logging、TensorBoard、（可选）MLflow。"""
+    """Unified management of logging、TensorBoard、(Optional) MLflow。"""
 
     def __init__(self, base_dir: str, exp_name: str, use_tb: bool, mlflow_cfg: Optional[dict] = None):
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")

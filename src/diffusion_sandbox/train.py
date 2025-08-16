@@ -24,7 +24,7 @@ def main() -> None:
     args = parse_args()
     cfg = load_config(args.config)
 
-    # 设备与种子
+    # Device and Seed
     if cfg.run.device == "auto":
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     else:
@@ -32,11 +32,11 @@ def main() -> None:
 
     set_all_seeds(cfg.run.seed, cfg.run.cudnn.benchmark, cfg.run.cudnn.deterministic)
 
-    # 日志器
+    # Data logger
     logger = RunLogger(cfg.run.output_dir, cfg.run.experiment_name, cfg.tracking.tensorboard, mlflow_cfg=cfg.tracking.mlflow.__dict__)
     logger.log_params({"config_path": args.config, **cfg.__dict__["run"].__dict__})
 
-    # 数据
+    # Data
     dl = build_dataloader(
         name=cfg.data.name,
         n=cfg.data.num_samples,
@@ -47,7 +47,7 @@ def main() -> None:
         seed=cfg.run.seed,
     )
 
-    # 模型 & 扩散
+    # Model & Diffusion
     model = MLPNoisePredictor(
         input_dim=cfg.model.input_dim,
         hidden_dim=cfg.model.hidden_dim,

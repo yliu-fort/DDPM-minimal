@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 
 def sinusoidal_time_emb(t: torch.Tensor, dim: int) -> torch.Tensor:
-    """标准正弦时间嵌入 (positional encoding)。"""
+    """Standard sinusoidal time embedding (positional encoding)。"""
 
     device = t.device
     half = dim // 2

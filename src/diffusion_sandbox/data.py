@@ -12,7 +12,7 @@ class SyntheticGMMCfg:
     std: float
 
 class SyntheticGMM(Dataset[torch.Tensor]):
-    """合成 2D GMM 数据：在圆环上等角放置多个高斯模式。"""
+    """Synthesize 2D GMM data: place multiple Gaussian modes equally spaced on a circular ring."""
 
     def __init__(self, n: int, cfg: SyntheticGMMCfg, seed: int = 0) -> None:
         rng = np.random.default_rng(seed)
@@ -38,7 +38,7 @@ class SyntheticRingCfg:
     noise_std: float
 
 class SyntheticRing(Dataset[torch.Tensor]):
-    """单位圆环 + 高斯噪声。"""
+    """Unit ring + Gaussian noise."""
 
     def __init__(self, n: int, cfg: SyntheticRingCfg, seed: int = 0) -> None:
         rng = np.random.default_rng(seed)

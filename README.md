@@ -1,8 +1,9 @@
 # diffusion-sandbox
 
-一个最小但工业风的 Diffusion 学习模板：YAML 配置、确定性、追踪与日志、单元测试、类型检查与风格工具、可视化示例齐全。
+A minimal yet production-style Diffusion learning template: YAML configuration, determinism, tracking and logging, unit tests, type checking and style tools, and complete visualization examples.
 
-## 快速开始
+## Quick Start
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -11,21 +12,27 @@ python -m diffusion_sandbox.train --config configs/default.yaml
 tensorboard --logdir runs
 ```
 
-## 配置
-修改 `configs/default.yaml` 中的数据集/模型/扩散/训练/追踪参数。
+## Configuration
 
-## 风格与类型
-- 格式化: `black . && isort .`
-- 静态检查: `ruff check .`
-- 类型检查: `mypy src tests`
+Modify dataset/model/diffusion/training/tracking parameters in `configs/default.yaml`.
 
-## 结构
-详见仓库目录与源码内 docstring。
+## Style & Typing
 
-## 数据集可视化
+- Formatting: `black . && isort .`
+- Static checks: `ruff check .`
+- Type checking: `mypy src tests`
+
+## Structure
+
+See the repository directory and docstrings in the source code.
+
+## Dataset Visualization
+
 ```bash
 python scripts/visualize_datasets.py
 ```
-运行后会在 examples/figures/ 下生成：
+
+After running, the following will be generated under `examples/figures/`:
+
 - gmm.png
 - ring.png

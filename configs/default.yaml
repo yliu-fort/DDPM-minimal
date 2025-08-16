@@ -1,14 +1,14 @@
-# 运行与环境
+# Run & Environment
 run:
   experiment_name: "ddpm_gmm_demo"
-  output_dir: "runs"               # TensorBoard 与检查点目录
+  output_dir: "runs"               # TensorBoard and checkpoint folder
   seed: 42
   device: "auto"                   # "auto"|"cpu"|"cuda"
   cudnn:
     benchmark: false
     deterministic: true
 
-# 数据集（合成）
+# Dataset
 data:
   name: "gmm"                       # "gmm" | "ring"
   num_samples: 10000
@@ -29,14 +29,14 @@ diffusion:
   beta_start: 1.0e-4
   beta_end: 2.0e-2
 
-# 模型（MLP 噪声预测器）
+# Model
 model:
   input_dim: 2
   hidden_dim: 128
   num_layers: 3
   time_embed_dim: 32
 
-# 训练
+# Train
 train:
   epochs: 50
   lr: 1.0e-3
@@ -47,7 +47,7 @@ train:
   sample_interval: 5
   sample_size: 2048
 
-# 追踪与日志
+# Tracking & Logging
 tracking:
   tensorboard: true
   mlflow:
