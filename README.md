@@ -21,3 +21,11 @@ tensorboard --logdir runs
 
 ## 结构
 详见仓库目录与源码内 docstring。
+
+## 数据集可视化
+```bash
+python scripts/visualize_datasets.py
+```
+运行后会在 examples/figures/ 下生成：
+- gmm.png
+- ring.png
