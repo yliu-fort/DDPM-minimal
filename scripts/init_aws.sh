@@ -67,6 +67,6 @@ python -m unittest -v || true
 
 echo
 echo "[✓] Init done."
-echo "To start working:"
-echo "  source \$HOME/miniconda/bin/activate $ENV_NAME"
-echo "  python -m diffusion_sandbox.train --config configs/cifar10_class.yaml"
+#echo "To start working:"
+#echo "  source \$HOME/miniconda/bin/activate $ENV_NAME"
+#echo "  python -m diffusion_sandbox.train --config configs/cifar10_class.yaml"
