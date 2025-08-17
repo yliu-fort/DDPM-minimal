@@ -1,0 +1,57 @@
+run:
+  experiment_name: "ddpm_cifar10_uncond"
+  output_dir: "runs"
+  seed: 42
+  device: "auto"
+  cudnn:
+    benchmark: false
+    deterministic: true
+
+data:
+  name: "cifar10"
+  num_samples: 50000
+  batch_size: 128
+  num_workers: 4
+  cfg:
+    cifar10:
+      root: "./data"
+      download: true
+      class_conditional: false
+      cf_guidance_p: 0.0
+      img_size: 32
+
+diffusion:
+  timesteps: 1000
+  beta_schedule: "cosine"
+  beta_start: 1.0e-4
+  beta_end: 2.0e-2
+
+model:
+  name: "diffusers_unet2d"
+  common:
+    input_dim: 3
+    time_embed_dim: 128
+  diffusers_unet2d:
+    base_channels: 128
+    layers_per_block: 2
+    attn_on_16x16: true
+    num_classes: 0
+    class_dropout_prob: 0.0
+
+train:
+  epochs: 100
+  lr: 2.0e-4
+  weight_decay: 0.0
+  grad_clip: 1.0
+  log_interval: 50
+  ckpt_interval: 10
+  sample_interval: 5
+  sample_size: 64
+
+# Tracking & Logging
+tracking:
+  tensorboard: true
+  mlflow:
+    enabled: false
+    tracking_uri: "file:./mlruns"
+    experiment_name: "ddpm_cifar10"

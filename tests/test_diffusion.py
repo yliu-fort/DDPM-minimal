@@ -32,5 +32,13 @@ class TestUtils(unittest.TestCase):
             y = m(x, t)
             assert y.shape == x.shape
 
+    def test_unet2d_forward_shape(self):
+        Model = REGISTRY["diffusers_unet2d"]
+        m = Model(input_dim=3, time_embed_dim=128, base_channels=128, layers_per_block=2, attn_on_16x16=True, num_classes=0)
+        x = torch.randn(4, 3, 32, 32)
+        t = torch.randint(0, 10, (4,))
+        y = m(x, t)
+        assert y.shape == x.shape
+
 if __name__ == "__main__":
     unittest.main()

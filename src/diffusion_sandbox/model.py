@@ -1,8 +1,7 @@
 from __future__ import annotations
-import math
-from dataclasses import dataclass
-import torch
+import math, torch
 import torch.nn as nn
+from dataclasses import dataclass
 
 @dataclass
 class DiffusionCoeffs:
@@ -33,11 +32,9 @@ class DDPM:
             betas = betas.clamp(0.0001, 0.9999)
         else:
             raise ValueError("Unknown beta schedule")
-
         alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)
         alphas_cumprod_prev = torch.cat([torch.tensor([1.0], device=device), alphas_cumprod[:-1]], dim=0)
-
         return DiffusionCoeffs(
             betas=betas,
             alphas=alphas,
@@ -49,38 +46,36 @@ class DDPM:
         )
 
     def q_sample(self, x0: torch.Tensor, t: torch.Tensor, noise: torch.Tensor | None = None) -> torch.Tensor:
-        if noise is None:
-            noise = torch.randn_like(x0)
-        c = self.coeffs
-        sqrt_acp = c.sqrt_alphas_cumprod[t].unsqueeze(1)
-        sqrt_om = c.sqrt_one_minus_alphas_cumprod[t].unsqueeze(1)
+        if noise is None: noise = torch.randn_like(x0)
+        sqrt_acp = self.coeffs.sqrt_alphas_cumprod[t].reshape(-1, *([1] * (x0.dim() - 1)))
+        sqrt_om  = self.coeffs.sqrt_one_minus_alphas_cumprod[t].reshape(-1, *([1] * (x0.dim() - 1)))
         return sqrt_acp * x0 + sqrt_om * noise
 
-    def p_sample(self, model, x: torch.Tensor, t: int) -> torch.Tensor:
-        c = self.coeffs
+    def p_sample(self, model, x: torch.Tensor, t: int, y: torch.Tensor | None = None) -> torch.Tensor:
         t_batch = torch.full((x.size(0),), t, device=x.device, dtype=torch.long)
-        eps = model(x, t_batch)
-        beta_t = c.betas[t]
-        acp_t = c.alphas_cumprod[t]
-        acp_prev = c.alphas_cumprod_prev[t]
-        mean = (1 / torch.sqrt(c.alphas[t])) * (x - beta_t / torch.sqrt(1 - acp_t) * eps)
-        if t == 0:
-            return mean
-        var = c.posterior_variance[t]
+        eps = model(x, t_batch) if y is None else model(x, t_batch, y)
+        beta_t = self.coeffs.betas[t]
+        acp_t = self.coeffs.alphas_cumprod[t]
+        mean = (1 / torch.sqrt(self.coeffs.alphas[t])) * (x - beta_t / torch.sqrt(1 - acp_t) * eps)
+        if t == 0: return mean
+        var = self.coeffs.posterior_variance[t]
         noise = torch.randn_like(x)
         return mean + torch.sqrt(var) * noise
 
     @torch.no_grad()
-    def sample(self, model, n: int) -> torch.Tensor:
-        x = torch.randn(n, 2, device=self.device)
+    def sample(self, model, n: int, sample_shape: tuple | None = None, y: torch.Tensor | None = None) -> torch.Tensor:
+        if sample_shape is None:
+            x = torch.randn(n, 2, device=self.device)
+        else:
+            x = torch.randn(sample_shape, device=self.device)
         for t in reversed(range(self.timesteps)):
-            x = self.p_sample(model, x, t)
+            x = self.p_sample(model, x, t, y=y)
         return x
 
-    def loss(self, model, x0: torch.Tensor) -> torch.Tensor:
+    def loss(self, model, x0: torch.Tensor, y: torch.Tensor | None = None) -> torch.Tensor:
         b = x0.size(0)
         t = torch.randint(0, self.timesteps, (b,), device=x0.device, dtype=torch.long)
         noise = torch.randn_like(x0)
         x_noisy = self.q_sample(x0, t, noise)
-        eps_pred = model(x_noisy, t)
+        eps_pred = model(x_noisy, t) if y is None else model(x_noisy, t, y)
         return torch.mean((noise - eps_pred) ** 2)

@@ -18,7 +18,7 @@ class RunCfg:
 
 @dataclass
 class DataCfg:
-    name: Literal["gmm", "ring", "concentric", "two_moons", "swiss_roll2d", "spiral", "checkerboard", "pinwheel"]
+    name: Literal["gmm", "ring", "concentric", "two_moons", "swiss_roll2d", "spiral", "checkerboard", "pinwheel", "cifar10"]
     num_samples: int
     batch_size: int
     num_workers: int
@@ -43,6 +43,7 @@ class ModelCfg:
     mlp_residual: Optional[Dict[str, Any]] = None
     timm_mlp: Optional[Dict[str, Any]] = None
     diffusers_unet1d: Optional[Dict[str, Any]] = None
+    diffusers_unet2d: Optional[Dict[str, Any]] = None
 
 @dataclass
 class TrainCfg:
