@@ -1,6 +1,6 @@
 # Run & Environment
 run:
-  experiment_name: "ddpm_gmm_demo"
+  experiment_name: "ddpm_demo"
   output_dir: "runs"               # TensorBoard and checkpoint folder
   seed: 42
   device: "auto"                   # "auto"|"cpu"|"cuda"
@@ -67,14 +67,31 @@ diffusion:
 
 # Model
 model:
-  input_dim: 2
-  hidden_dim: 128
-  num_layers: 3
-  time_embed_dim: 32
+  name: "mlp_residual"              # mlp_baseline | mlp_residual | timm_mlp | diffusers_unet1d
+  common:
+    input_dim: 2
+    time_embed_dim: 32
+  mlp_baseline:
+    hidden_dim: 128
+    num_layers: 3
+  mlp_residual:
+    hidden_dim: 128
+    num_layers: 3
+    dropout: 0.0
+  timm_mlp:
+    hidden_dim: 128
+    num_layers: 2
+    dropout: 0.0
+  diffusers_unet1d:
+    base_channels: 32
+    layers_per_block: 2
+    down_block_types: ["DownBlock1D", "DownBlock1D"]
+    up_block_types: ["UpBlock1D", "UpBlock1D"]
+    seq_len: 32
 
 # Train
 train:
-  epochs: 50
+  epochs: 100
   lr: 1.0e-3
   weight_decay: 0.0
   grad_clip: 1.0
@@ -89,4 +106,4 @@ tracking:
   mlflow:
     enabled: false
     tracking_uri: "file:./mlruns"
-    experiment_name: "ddpm_gmm_demo"
+    experiment_name: "ddpm_demo"

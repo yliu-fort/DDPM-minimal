@@ -33,10 +33,16 @@ class DiffusionCfg:
 
 @dataclass
 class ModelCfg:
-    input_dim: int
-    hidden_dim: int
-    num_layers: int
-    time_embed_dim: int
+    input_dim: int = 2
+    hidden_dim: int = 128
+    num_layers: int = 3
+    time_embed_dim: int = 32
+    name: str = "mlp_baseline"
+    common: Optional[Dict[str, Any]] = None
+    mlp_baseline: Optional[Dict[str, Any]] = None
+    mlp_residual: Optional[Dict[str, Any]] = None
+    timm_mlp: Optional[Dict[str, Any]] = None
+    diffusers_unet1d: Optional[Dict[str, Any]] = None
 
 @dataclass
 class TrainCfg:
@@ -79,7 +85,7 @@ def load_config(path: str) -> Cfg:
             **{k: v for k, v in raw["data"].items() if k not in {}},
         ),
         diffusion=DiffusionCfg(**raw["diffusion"]),
-        model=ModelCfg(**raw["model"]),
+        model=ModelCfg(**raw.get("model", {})),
         train=TrainCfg(**raw["train"]),
         tracking=TrackingCfg(tensorboard=raw["tracking"]["tensorboard"], mlflow=MlflowCfg(**raw["tracking"]["mlflow"])),
     )

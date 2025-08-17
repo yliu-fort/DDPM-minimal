@@ -10,7 +10,8 @@ from diffusion_sandbox.config import load_config
 from diffusion_sandbox.seed import set_all_seeds
 from diffusion_sandbox.logger import RunLogger
 from diffusion_sandbox.data import build_dataloader
-from diffusion_sandbox.model import MLPNoisePredictor, DDPM
+from diffusion_sandbox.model import DDPM
+from diffusion_sandbox.models import REGISTRY
 from diffusion_sandbox.viz import scatter_2d
 
 
@@ -19,6 +20,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--config", type=str, default="configs/default.yaml")
     return p.parse_args()
 
+def asdict_maybe(obj):
+    if obj is None:
+        return {}
+    if hasattr(obj, "__dict__"):
+        return dict(obj.__dict__)
+    if isinstance(obj, dict):
+        return obj
+    return {}
 
 def main() -> None:
     args = parse_args()
@@ -47,12 +56,13 @@ def main() -> None:
     )
 
     # Model & Diffusion
-    model = MLPNoisePredictor(
-        input_dim=cfg.model.input_dim,
-        hidden_dim=cfg.model.hidden_dim,
-        num_layers=cfg.model.num_layers,
-        time_embed_dim=cfg.model.time_embed_dim,
-    ).to(device)
+    name = getattr(cfg.model, "name", "mlp_baseline")
+    common = asdict_maybe(getattr(cfg.model, "common", None))
+    specific = asdict_maybe(getattr(cfg.model, name, None))
+    if name not in REGISTRY:
+        raise ValueError(f"Unknown model name: {name}")
+    ModelCls = REGISTRY[name]
+    model = ModelCls(**common, **specific).to(device)
 
     ddpm = DDPM(
         timesteps=cfg.diffusion.timesteps,
