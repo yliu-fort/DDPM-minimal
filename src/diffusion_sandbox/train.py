@@ -50,15 +50,15 @@ def main() -> None:
     # Data
     if cfg.data.name == "cifar10":
         dl = build_cifar10_dataloader(
-            root=cfg.data.cifar10.root,
+            root=cfg.data.cfg["cifar10"]["root"],
             batch_size=cfg.data.batch_size,
             num_workers=cfg.data.num_workers,
-            download=cfg.data.cifar10.download,
-            class_conditional=cfg.data.cifar10.class_conditional,
-            img_size=cfg.data.cifar10.img_size,
-            cf_guidance_p=cfg.data.cifar10.cf_guidance_p,
+            download=cfg.data.cfg["cifar10"]["download"],
+            class_conditional=cfg.data.cfg["cifar10"]["class_conditional"],
+            img_size=cfg.data.cfg["cifar10"]["img_size"],
+            cf_guidance_p=cfg.data.cfg["cifar10"]["cf_guidance_p"],
         )
-        sample_shape = (cfg.train.sample_size, 3, cfg.data.cifar10.img_size, cfg.data.cifar10.img_size)
+        sample_shape = (cfg.train.sample_size, 3, cfg.data.cfg["cifar10"]["img_size"], cfg.data.cfg["cifar10"]["img_size"])
     else:
         dl = build_dataloader(
             name=cfg.data.name,
