@@ -15,47 +15,48 @@ data:
   num_samples: 10000
   batch_size: 512
   num_workers: 0
-  gmm:
-    num_modes: 8
-    radius: 4.0
-    mode_std: 0.15
-    noise_std: 0.0
-  ring:
-    radius: 4.0
-    radial_std: 0.05
-    noise_std: 0.0
-  concentric:
-    num_rings: 3
-    r_min: 1.0
-    r_max: 4.0
-    per_ring_balance: True  # balance samples across rings
-    noise_std: 0.02
-  two_moons:
-    radius: 1.0
-    width: 0.3           # vertical offset between two moons
-    gap: 0.0             # horizontal gap between two moons
-    noise_std: 0.05
-  swiss_roll2d:
-    turns: 3.0                 # controls t range
-    height: 5.0                # z range [-height, height]
-    noise_std: 0.05
-  spiral:
-    arms: 2
-    turns: 2.0          # number of spiral turns
-    a:  0.2              # radial scale r = a * theta
-    noise_std: 0.05
-  checkerboard:
-    x_range: [-2.0, 2.0]
-    y_range:  [-2.0, 2.0]
-    cells: 4               # number of cells per axis
-    jitter: 0.05         # local noise inside a cell
-    noise_std: 0.0       # global noise after composing
-  pinwheel:
-    arms: 5
-    radial_std: 0.3
-    tangential_std: 0.05
-    rate: 0.25          # rotation rate (controls how much twist increases with radius)
-    noise_std: 0.0
+  cfg:
+    gmm:
+      num_modes: 8
+      radius: 4.0
+      mode_std: 0.15
+      noise_std: 0.0
+    ring:
+      radius: 4.0
+      radial_std: 0.05
+      noise_std: 0.0
+    concentric:
+      num_rings: 3
+      r_min: 1.0
+      r_max: 4.0
+      per_ring_balance: True  # balance samples across rings
+      noise_std: 0.02
+    two_moons:
+      radius: 1.0
+      width: 0.3           # vertical offset between two moons
+      gap: 0.0             # horizontal gap between two moons
+      noise_std: 0.05
+    swiss_roll2d:
+      turns: 3.0                 # controls t range
+      height: 5.0                # z range [-height, height]
+      noise_std: 0.05
+    spiral:
+      arms: 2
+      turns: 2.0          # number of spiral turns
+      a:  0.2              # radial scale r = a * theta
+      noise_std: 0.05
+    checkerboard:
+      x_range: [-2.0, 2.0]
+      y_range:  [-2.0, 2.0]
+      cells: 4               # number of cells per axis
+      jitter: 0.05         # local noise inside a cell
+      noise_std: 0.0       # global noise after composing
+    pinwheel:
+      arms: 5
+      radial_std: 0.3
+      tangential_std: 0.05
+      rate: 0.25          # rotation rate (controls how much twist increases with radius)
+      noise_std: 0.0
 
 # Diffusion（DDPM）
 diffusion:

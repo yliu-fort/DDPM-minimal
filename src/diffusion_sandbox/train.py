@@ -42,7 +42,7 @@ def main() -> None:
         n=cfg.data.num_samples,
         batch_size=cfg.data.batch_size,
         num_workers=cfg.data.num_workers,
-        cfg_kwargs=dict(**getattr(cfg.data, cfg.data.name, {}).__dict__),
+        cfg_kwargs=cfg.data.cfg.get(cfg.data.name, {}),
         seed=cfg.run.seed,
     )
 

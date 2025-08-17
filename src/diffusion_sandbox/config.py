@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Literal, Tuple
+from typing import Literal, Tuple, Optional, Dict, Any
 import yaml
 
 @dataclass
@@ -17,76 +17,12 @@ class RunCfg:
     cudnn: CudnnCfg
 
 @dataclass
-class GMMCfg:
-    num_modes: int
-    radius: float
-    mode_std: float
-    noise_std: float
-
-@dataclass
-class RingCfg:
-    radius: float
-    radial_std: float
-    noise_std: float
-
-@dataclass
-class TwoMoonsCfg:
-    radius: float
-    width: float
-    gap: float
-    noise_std: float
-
-@dataclass
-class ConcentricCirclesCfg:
-    num_rings: int
-    r_min: float
-    r_max: float
-    per_ring_balance: bool
-    noise_std: float
-
-@dataclass
-class SpiralCfg:
-    arms: int
-    turns: float
-    a: float
-    noise_std: float
-
-@dataclass
-class CheckerboardCfg:
-    x_range: Tuple[float, float]
-    y_range: Tuple[float, float]
-    cells: int
-    jitter: float
-    noise_std: float
-
-@dataclass
-class PinwheelCfg:
-    arms: int
-    radial_std: float
-    tangential_std: float
-    rate: float
-    noise_std: float
-
-@dataclass
-class SwissRoll2DCfg:
-    turns: float
-    height: float
-    noise_std: float
-
-@dataclass
 class DataCfg:
     name: Literal["gmm", "ring", "concentric", "two_moons", "swiss_roll2d", "spiral", "checkerboard", "pinwheel"]
     num_samples: int
     batch_size: int
     num_workers: int
-    gmm: GMMCfg
-    ring: RingCfg
-    concentric: ConcentricCirclesCfg
-    two_moons: TwoMoonsCfg
-    swiss_roll2d: SwissRoll2DCfg
-    spiral: SpiralCfg
-    checkerboard: CheckerboardCfg
-    pinwheel: PinwheelCfg
+    cfg: Dict[str, Any]
 
 @dataclass
 class DiffusionCfg:
@@ -140,15 +76,7 @@ def load_config(path: str) -> Cfg:
     cfg = Cfg(
         run=RunCfg(**{k: v for k, v in raw["run"].items() if k not in {"cudnn",}}, cudnn=CudnnCfg(**raw["run"]["cudnn"])),
         data=DataCfg(
-            **{k: v for k, v in raw["data"].items() if k not in {"gmm", "ring", "concentric", "two_moons", "swiss_roll2d", "spiral", "checkerboard", "pinwheel"}},
-            gmm=GMMCfg(**raw["data"]["gmm"]),
-            ring=RingCfg(**raw["data"]["ring"]),
-            concentric=ConcentricCirclesCfg(**raw["data"]["concentric"]),
-            two_moons=TwoMoonsCfg(**raw["data"]["two_moons"]),
-            swiss_roll2d=SwissRoll2DCfg(**raw["data"]["swiss_roll2d"]),
-            spiral=SpiralCfg(**raw["data"]["spiral"]),
-            checkerboard=CheckerboardCfg(**raw["data"]["checkerboard"]),
-            pinwheel=PinwheelCfg(**raw["data"]["pinwheel"]),
+            **{k: v for k, v in raw["data"].items() if k not in {}},
         ),
         diffusion=DiffusionCfg(**raw["diffusion"]),
         model=ModelCfg(**raw["model"]),
