@@ -36,3 +36,7 @@ After running, the following will be generated under `examples/figures/`:
 
 - gmm.png
 - ring.png
+
+## 1-click deployment on AWS EC2 GPU instance
+
+See `scripts/init_aws_ami.sh`.
