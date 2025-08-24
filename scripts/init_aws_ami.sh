@@ -42,7 +42,7 @@ pip install --upgrade pip
 echo "[*] Cloning repo..."
 # Backup runs if it exists
 if [ -d "$REPO_DIR/runs" ]; then
-  cp -r "$REPO_DIR/runs" /data/runs
+  cp -r "$REPO_DIR/runs" /data
 fi
 
 # Remove old repo and clone fresh
@@ -51,7 +51,7 @@ git clone "$REPO_URL" "$REPO_DIR"
 
 # Restore runs if backup exists
 if [ -d "/data/runs" ]; then
-  cp -r /data/runs "$REPO_DIR/runs"
+  cp -r /data/runs "$REPO_DIR"
 fi
 cd "$REPO_DIR" || { echo " : $REPO_DIR"; exit 1; }
 
