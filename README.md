@@ -39,4 +39,4 @@ After running, the following will be generated under `examples/figures/`:
 
 ## 1-click deployment on AWS EC2 GPU instance
 
-See `scripts/init_aws_ami.sh`.
+See `scripts/init_aws_ami.sh` for NVIDIA GPU instance and `scripts/init_aws.sh` for CPU instance.
