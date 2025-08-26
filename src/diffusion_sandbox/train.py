@@ -10,7 +10,7 @@ from diffusion_sandbox.config import load_config
 from diffusion_sandbox.seed import set_all_seeds
 from diffusion_sandbox.logger import RunLogger
 from diffusion_sandbox.data import build_dataloader
-from diffusion_sandbox.image_data import build_cifar10_dataloader
+from diffusion_sandbox.image_data import build_cifar10_dataloader, build_mnist_dataloader
 
 from diffusion_sandbox.model import DDPM
 from diffusion_sandbox.models import REGISTRY
@@ -48,7 +48,7 @@ def main() -> None:
     logger.log_params({"config_path": args.config, **cfg.__dict__["run"].__dict__})
 
     # Data
-    if cfg.data.name in ["cifar10", "mnist"]:
+    if cfg.data.name == "cifar10":
         dl = build_cifar10_dataloader(
             root=cfg.data.cfg[cfg.data.name]["root"],
             batch_size=cfg.data.batch_size,
@@ -59,6 +59,17 @@ def main() -> None:
             cf_guidance_p=cfg.data.cfg[cfg.data.name]["cf_guidance_p"],
         )
         sample_shape = (cfg.train.sample_size, 3, cfg.data.cfg[cfg.data.name]["img_size"], cfg.data.cfg[cfg.data.name]["img_size"])
+    elif cfg.data.name == "mnist":
+        dl = build_mnist_dataloader(
+            root=cfg.data.cfg[cfg.data.name]["root"],
+            batch_size=cfg.data.batch_size,
+            num_workers=cfg.data.num_workers,
+            download=cfg.data.cfg[cfg.data.name]["download"],
+            class_conditional=cfg.data.cfg[cfg.data.name]["class_conditional"],
+            img_size=cfg.data.cfg[cfg.data.name]["img_size"],
+            cf_guidance_p=cfg.data.cfg[cfg.data.name]["cf_guidance_p"],
+        )
+        sample_shape = (cfg.train.sample_size, 1, cfg.data.cfg[cfg.data.name]["img_size"], cfg.data.cfg[cfg.data.name]["img_size"])
     else:
         dl = build_dataloader(
             name=cfg.data.name,
