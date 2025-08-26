@@ -48,17 +48,17 @@ def main() -> None:
     logger.log_params({"config_path": args.config, **cfg.__dict__["run"].__dict__})
 
     # Data
-    if cfg.data.name == "cifar10":
+    if cfg.data.name in ["cifar10", "mnist"]:
         dl = build_cifar10_dataloader(
-            root=cfg.data.cfg["cifar10"]["root"],
+            root=cfg.data.cfg[cfg.data.name]["root"],
             batch_size=cfg.data.batch_size,
             num_workers=cfg.data.num_workers,
-            download=cfg.data.cfg["cifar10"]["download"],
-            class_conditional=cfg.data.cfg["cifar10"]["class_conditional"],
-            img_size=cfg.data.cfg["cifar10"]["img_size"],
-            cf_guidance_p=cfg.data.cfg["cifar10"]["cf_guidance_p"],
+            download=cfg.data.cfg[cfg.data.name]["download"],
+            class_conditional=cfg.data.cfg[cfg.data.name]["class_conditional"],
+            img_size=cfg.data.cfg[cfg.data.name]["img_size"],
+            cf_guidance_p=cfg.data.cfg[cfg.data.name]["cf_guidance_p"],
         )
-        sample_shape = (cfg.train.sample_size, 3, cfg.data.cfg["cifar10"]["img_size"], cfg.data.cfg["cifar10"]["img_size"])
+        sample_shape = (cfg.train.sample_size, 3, cfg.data.cfg[cfg.data.name]["img_size"], cfg.data.cfg[cfg.data.name]["img_size"])
     else:
         dl = build_dataloader(
             name=cfg.data.name,
@@ -68,7 +68,7 @@ def main() -> None:
             cfg_kwargs=cfg.data.cfg.get(cfg.data.name, {}),
             seed=cfg.run.seed,
         )
-        sample_shape = None  # 点集默认 (n,2)
+        sample_shape = None  # Pointset default shape (n,2)
     # Model & Diffusion
     name = getattr(cfg.model, "name", "mlp_baseline")
     common = asdict_maybe(getattr(cfg.model, "common", None))
@@ -112,7 +112,7 @@ def main() -> None:
         if epoch % cfg.train.sample_interval == 0 or epoch == cfg.train.epochs:
             with torch.no_grad():
                 model.eval()
-                if cfg.data.name == "cifar10":
+                if cfg.data.name in ["cifar10", "mnist"]:
                     fake = ddpm.sample(model, n=cfg.train.sample_size, sample_shape=sample_shape, y=None)
                     fig = image_grid(fake, nrow=8, title=f"epoch {epoch}")
                     logger.add_figure("samples/images", fig, step=epoch)

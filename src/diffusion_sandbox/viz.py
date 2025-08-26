@@ -24,8 +24,13 @@ def image_grid(x: torch.Tensor, nrow: int = 8, title: str = ""):
     fig = plt.figure(figsize=(nrow, ncol))
     for i in range(B):
         ax = fig.add_subplot(ncol, nrow, i+1)
-        ax.imshow(x[i].permute(1,2,0).numpy())
+        img = x[i]
+        if C == 1:
+            ax.imshow(img.squeeze(0).numpy(), cmap="gray")
+        else:
+            ax.imshow(img.permute(1,2,0).numpy())
         ax.axis("off")
     fig.suptitle(title)
     fig.tight_layout()
     return fig
+

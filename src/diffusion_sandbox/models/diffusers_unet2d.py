@@ -4,7 +4,7 @@ import torch.nn as nn
 from diffusers.models import UNet2DModel
 
 class DiffusersUNet2DNoisePredictor(nn.Module):
-    """UNet2D，支持无条件或类别条件（通过 class_labels）。"""
+    """UNet2D, support unconditional/conditional training (through class_labels)."""
     def __init__(
         self,
         input_dim: int,
@@ -25,8 +25,9 @@ class DiffusersUNet2DNoisePredictor(nn.Module):
 
         self.model = UNet2DModel(
             sample_size=32,
-            in_channels=3,
-            out_channels=3,
+            in_channels=input_dim,
+            out_channels=input_dim,
+            time_embedding_dim=time_embed_dim,
             block_out_channels=(base_channels, base_channels*2, base_channels*2),
             layers_per_block=layers_per_block,
             down_block_types=tuple(down_blocks),
@@ -34,7 +35,8 @@ class DiffusersUNet2DNoisePredictor(nn.Module):
             class_embed_type=("timestep" if num_classes > 0 else None),
             num_class_embeds=(num_classes if num_classes > 0 else None),
             dropout=class_dropout_prob if num_classes > 0 else 0.0,
-            #norm_num_groups=1,
+            #attention_head_dim=4,
+            #norm_num_groups=32,
         )
 
     def forward(self, x: torch.Tensor, t: torch.Tensor, y: torch.Tensor | None = None) -> torch.Tensor:
