@@ -94,5 +94,5 @@ def maybe_resume(
     if scaler and ckpt.get("scaler"): scaler.load_state_dict(ckpt["scaler"])
     if ema and ckpt.get("ema"): ema.load_state_dict(ckpt["ema"])
     if restore_rng and ckpt.get("rng"): _rng_state_load(ckpt["rng"])
-    step, epoch = ckpt.get("step", 0), ckpt.get("epoch", 0)
+    step, epoch = ckpt.get("step", 0), ckpt.get("epoch", 1)
     return step, epoch, ckpt.get("metrics", {})
