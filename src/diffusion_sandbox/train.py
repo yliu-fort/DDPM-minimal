@@ -1,12 +1,11 @@
 from __future__ import annotations
-import argparse
+import argparse, os, signal
 from pathlib import Path
-
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
 
-from diffusion_sandbox.config import load_config
+from diffusion_sandbox.config import load_config, cfg_to_dict
 from diffusion_sandbox.seed import set_all_seeds
 from diffusion_sandbox.logger import RunLogger
 from diffusion_sandbox.data import build_dataloader
@@ -16,6 +15,12 @@ from diffusion_sandbox.model import DDPM
 from diffusion_sandbox.models import REGISTRY
 from diffusion_sandbox.viz import scatter_2d, image_grid
 
+from diffusion_sandbox.checkpointing import (
+    save_checkpoint,
+    maybe_resume,
+    latest_checkpoint,
+    prune_old,
+)
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
@@ -100,7 +105,33 @@ def main() -> None:
     opt = AdamW(model.parameters(), lr=cfg.train.lr, weight_decay=cfg.train.weight_decay)
 
     global_step = 0
-    for epoch in range(1, cfg.train.epochs + 1):
+
+    # ---------- checkpoint dir & resume ----------
+    run_dir = Path(logger.run_dir)
+    ckpt_dir = Path(getattr(cfg.train, "checkpoint_dir", "") or (run_dir / "checkpoints"))
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+
+    start_step, start_epoch, _ = maybe_resume(
+        resume_from=getattr(cfg.train, "resume_from", ""),
+        checkpoint_dir=str(ckpt_dir),
+        model=model,
+        optimizer=opt,
+        scheduler=None,
+        scaler=None,
+        ema=None,
+        strict=True,
+        restore_rng=getattr(cfg.train, "save_rng_state", True),
+    )
+    global_step = start_step
+
+    # handle SIGINT/SIGTERM → save & exit cleanly
+    stop_flag = {"stop": False}
+    def _handle(sig, frame):
+        stop_flag["stop"] = True
+    signal.signal(signal.SIGINT, _handle)
+    signal.signal(signal.SIGTERM, _handle)
+
+    for epoch in range(start_epoch, cfg.train.epochs + 1):
         model.train()
         for it, batch in enumerate(dl, start=1):
             if isinstance(batch, (tuple, list)):
@@ -120,6 +151,37 @@ def main() -> None:
                 logger.log_metric("train/loss", loss.item(), global_step)
             global_step += 1
 
+            # ---------- autosave by step ----------
+            save_every = int(getattr(cfg.train, "save_every_steps", 0))
+            if save_every and (global_step % save_every == 0 or stop_flag["stop"]):
+                step_path = ckpt_dir / f"step_{global_step}.pt"
+                save_checkpoint(
+                    path=str(step_path),
+                    model=model,
+                    optimizer=opt,
+                    scheduler=None,
+                    scaler=None,
+                    ema=None,
+                    step=global_step,
+                    epoch=epoch,
+                    config=cfg_to_dict(cfg),
+                    metrics=None,
+                    save_rng_state=getattr(cfg.train, "save_rng_state", True),
+                )
+                # refresh latest.pt (hardlink, fallback copy)
+                try:
+                    latest = ckpt_dir / "latest.pt"
+                    if latest.exists(): latest.unlink()
+                    os.link(step_path, latest)
+                except Exception:
+                    import shutil as _sh
+                    _sh.copy2(step_path, ckpt_dir / "latest.pt")
+                prune_old(str(ckpt_dir), int(getattr(cfg.train, "keep_last_k", 3)))
+                if stop_flag["stop"]:
+                    print("[signal] checkpoint saved; exiting.")
+                    logger.close()
+                    return
+
         if epoch % cfg.train.sample_interval == 0 or epoch == cfg.train.epochs:
             with torch.no_grad():
                 model.eval()
@@ -134,12 +196,21 @@ def main() -> None:
                     logger.add_figure("samples/compare", fig, step=epoch)
 
         if epoch % cfg.train.ckpt_interval == 0 or epoch == cfg.train.epochs:
+            # keep your epoch checkpoint, but include optimizer/step/rng to make it resumable too
             ckpt_path = Path(logger.run_dir) / f"model-epoch{epoch}.pt"
-            torch.save({
-                "model": model.state_dict(),
-                "epoch": epoch,
-                "cfg": cfg.__dict__,
-            }, ckpt_path)
+            save_checkpoint(
+                path=str(ckpt_path),
+                model=model,
+                optimizer=opt,
+                scheduler=None,
+                scaler=None,
+                ema=None,
+                step=global_step,
+                epoch=epoch,
+                config=cfg_to_dict(cfg),
+                metrics=None,
+                save_rng_state=getattr(cfg.train, "save_rng_state", True),
+            )
 
     logger.close()
 

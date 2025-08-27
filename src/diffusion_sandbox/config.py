@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, is_dataclass, asdict
 from typing import Literal, Tuple, Optional, Dict, Any
 import yaml
 
@@ -55,6 +55,12 @@ class TrainCfg:
     ckpt_interval: int
     sample_interval: int
     sample_size: int
+    checkpoint_dir: str
+    save_every_steps: int
+    keep_last_k: int
+    resume_from: str
+    save_best_on: str
+    save_rng_state: bool
 
 @dataclass
 class MlflowCfg:
@@ -91,3 +97,28 @@ def load_config(path: str) -> Cfg:
         tracking=TrackingCfg(tensorboard=raw["tracking"]["tensorboard"], mlflow=MlflowCfg(**raw["tracking"]["mlflow"])),
     )
     return cfg
+
+
+def cfg_to_dict(obj):
+    """
+    Recursively convert nested config objects (dataclasses or custom Cfg types) 
+    into plain Python dicts/lists/primitives.
+    """
+    # handle dataclasses (if your configs use @dataclass)
+    if is_dataclass(obj):
+        return {k: cfg_to_dict(v) for k, v in asdict(obj).items()}
+
+    # handle dicts
+    if isinstance(obj, dict):
+        return {k: cfg_to_dict(v) for k, v in obj.items()}
+
+    # handle lists / tuples
+    if isinstance(obj, (list, tuple)):
+        return [cfg_to_dict(v) for v in obj]
+
+    # handle custom Cfg-like classes with __dict__
+    if hasattr(obj, "__dict__"):
+        return {k: cfg_to_dict(v) for k, v in vars(obj).items()}
+
+    # base case: primitive
+    return obj

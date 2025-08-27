@@ -99,6 +99,12 @@ train:
   ckpt_interval: 10
   sample_interval: 5
   sample_size: 2048
+  checkpoint_dir: "runs/checkpoints"   # where to save
+  save_every_steps: 1000               # autosave cadence
+  keep_last_k: 3                       # how many checkpoints to retain
+  resume_from: "latest"                # "", path/to/ckpt.pt, or "latest"
+  save_best_on: "val_loss"             # (TODO) metric name in your eval dict
+  save_rng_state: true                 # restore RNG for exact reproducibility
 
 # Tracking & Logging
 tracking:
