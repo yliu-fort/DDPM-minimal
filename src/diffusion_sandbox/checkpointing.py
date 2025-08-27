@@ -86,7 +86,7 @@ def maybe_resume(
     if resume_from:
         ckpt_path = resume_from if resume_from != "latest" else latest_checkpoint(checkpoint_dir)
     if not ckpt_path or not os.path.exists(ckpt_path):
-        return 0, 0, {}
+        return 0, 1, {}
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     model.load_state_dict(ckpt["model"], strict=strict)
     optimizer.load_state_dict(ckpt["optimizer"])
