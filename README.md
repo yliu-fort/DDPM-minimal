@@ -1,6 +1,8 @@
-# diffusion-sandbox
+# diffusion-minimal
 
 A minimal yet production-style Diffusion learning template: YAML configuration, determinism, tracking and logging, unit tests, type checking and style tools, and complete visualization examples.
+
+![MNIST demo](./examples/mnist.png)
 
 ## Quick Start
 
