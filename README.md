@@ -2,7 +2,7 @@
 
 A minimal yet production-style Diffusion learning template: YAML configuration, determinism, tracking and logging, unit tests, type checking and style tools, and complete visualization examples.
 
-![MNIST demo](./examples/mnist.png)
+![CIFAR10 demo](./examples/cifar10.png)
 
 ## Quick Start
 
