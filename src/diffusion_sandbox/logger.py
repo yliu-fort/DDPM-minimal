@@ -36,7 +36,7 @@ class RunLogger:
         # TensorBoard
         self.tb: Optional[SummaryWriter] = SummaryWriter(self.run_dir.as_posix()) if use_tb else None
 
-        # MLflow（可选）
+        # MLflow (Optional)
         self.mlflow_on = bool(mlflow_cfg and mlflow_cfg.get("enabled"))
         if self.mlflow_on and mlflow is not None:
             mlflow.set_tracking_uri(mlflow_cfg["tracking_uri"])  # type: ignore[index]
