@@ -18,6 +18,7 @@ pip install --upgrade pip
 echo "[*] Cloning repo..."
 # Backup runs if it exists
 if [ -d "$REPO_DIR/runs" ]; then
+  rm -rf /data/runs
   cp -r "$REPO_DIR/runs" /data
 fi
 
@@ -50,5 +51,5 @@ echo "nohup env PYTHONPATH=/data/DDPM-minimal/src python src/diffusion_sandbox/t
 echo "nohup tensorboard --logdir runs --host 0.0.0.0 --port 6006 > tb.out 2>&1 &"
 
 cd $REPO_DIR
-nohup env PYTHONPATH="$PWD/src" python src/diffusion_sandbox/train.py --config configs/mnist_uncond.yaml > log.out 2>&1 &
+nohup env PYTHONPATH="$PWD/src" python src/diffusion_sandbox/train.py --config configs/cifar10_uncond.yaml > log.out 2>&1 &
 nohup tensorboard --logdir runs --host 0.0.0.0 --port 6007 > tb.out 2>&1 &
