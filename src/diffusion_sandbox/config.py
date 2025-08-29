@@ -61,6 +61,8 @@ class TrainCfg:
     resume_from: str
     save_best_on: str
     save_rng_state: bool
+    warmup: int
+    ema_decay: float
 
 @dataclass
 class MlflowCfg:

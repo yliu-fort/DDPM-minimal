@@ -105,6 +105,8 @@ train:
   resume_from: "latest"                # "", path/to/ckpt.pt, or "latest"
   save_best_on: "val_loss"             # (TODO) metric name in your eval dict
   save_rng_state: true                 # restore RNG for exact reproducibility
+  warmup: 50
+  ema_decay: 0.5
 
 # Tracking & Logging
 tracking:

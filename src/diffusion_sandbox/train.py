@@ -40,6 +40,21 @@ class EMA:
     def copy_to(self, model):
         model.load_state_dict(self.shadow, strict=False)
 
+    def state_dict(self):
+        """Save EMA parameter"""
+        return {
+            "decay": self.decay,
+            "shadow": self.shadow
+        }
+
+    def load_state_dict(self, state_dict):
+        """Restore EMA parameter"""
+        self.decay = state_dict["decay"]
+        self.shadow = {
+            k: v.clone().detach()
+            for k, v in state_dict["shadow"].items()
+        }
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
@@ -123,9 +138,9 @@ def main() -> None:
 
     opt = AdamW(model.parameters(), lr=cfg.train.lr, weight_decay=cfg.train.weight_decay)
     scheduler = torch.optim.lr_scheduler.LambdaLR(
-        opt, lr_lambda=lambda step: min(1.0, step/5000)
+        opt, lr_lambda=lambda step: min(1.0, step/cfg.train.warmup)
     )
-    ema = EMA(model, decay=0.9999)
+    ema = EMA(model, decay=cfg.train.ema_decay)
     global_step = 0
 
     # ---------- checkpoint dir & resume ----------
