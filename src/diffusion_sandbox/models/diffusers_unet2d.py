@@ -34,8 +34,8 @@ class DiffusersUNet2DNoisePredictor(nn.Module):
             up_block_types=tuple(up_blocks),
             class_embed_type=("timestep" if num_classes > 0 else None),
             num_class_embeds=(num_classes if num_classes > 0 else None),
-            dropout=class_dropout_prob if num_classes > 0 else 0.0,
-            #attention_head_dim=4,
+            dropout=0.1,
+            #attention_head_dim=8,
             #norm_num_groups=32,
         )
 

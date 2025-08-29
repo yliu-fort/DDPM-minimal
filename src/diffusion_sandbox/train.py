@@ -1,5 +1,5 @@
 from __future__ import annotations
-import argparse, os, signal
+import argparse, os, signal, copy
 from pathlib import Path
 import torch
 import torch.nn as nn
@@ -21,6 +21,25 @@ from diffusion_sandbox.checkpointing import (
     latest_checkpoint,
     prune_old,
 )
+
+class EMA:
+    def __init__(self, model, decay=0.9999):
+        self.model = model
+        self.decay = decay
+        self.shadow = {
+            name: p.clone().detach()
+            for name, p in model.state_dict().items()
+        }
+
+    @torch.no_grad()
+    def update(self):
+        for name, param in self.model.state_dict().items():
+            if param.dtype.is_floating_point:
+                self.shadow[name].mul_(self.decay).add_(param, alpha=1 - self.decay)
+
+    def copy_to(self, model):
+        model.load_state_dict(self.shadow, strict=False)
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
@@ -103,7 +122,10 @@ def main() -> None:
     )
 
     opt = AdamW(model.parameters(), lr=cfg.train.lr, weight_decay=cfg.train.weight_decay)
-
+    scheduler = torch.optim.lr_scheduler.LambdaLR(
+        opt, lr_lambda=lambda step: min(1.0, step/5000)
+    )
+    ema = EMA(model, decay=0.9999)
     global_step = 0
 
     # ---------- checkpoint dir & resume ----------
@@ -116,9 +138,9 @@ def main() -> None:
         checkpoint_dir=str(ckpt_dir),
         model=model,
         optimizer=opt,
-        scheduler=None,
+        scheduler=scheduler,
         scaler=None,
-        ema=None,
+        ema=ema,
         strict=True,
         restore_rng=getattr(cfg.train, "save_rng_state", True),
     )
@@ -146,6 +168,8 @@ def main() -> None:
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), cfg.train.grad_clip)
             opt.step()
+            scheduler.step()
+            ema.update()
 
             if global_step % cfg.train.log_interval == 0:
                 logger.log_metric("train/loss", loss.item(), global_step)
@@ -159,9 +183,9 @@ def main() -> None:
                     path=str(step_path),
                     model=model,
                     optimizer=opt,
-                    scheduler=None,
+                    scheduler=scheduler,
                     scaler=None,
-                    ema=None,
+                    ema=ema,
                     step=global_step,
                     epoch=epoch,
                     config=cfg_to_dict(cfg),
@@ -185,12 +209,14 @@ def main() -> None:
         if epoch % cfg.train.sample_interval == 0 or epoch == cfg.train.epochs:
             with torch.no_grad():
                 model.eval()
+                ema_model = copy.deepcopy(model)
+                ema.copy_to(ema_model)
                 if cfg.data.name in ["cifar10", "mnist"]:
-                    fake = ddpm.sample(model, n=cfg.train.sample_size, sample_shape=sample_shape, y=None)
+                    fake = ddpm.sample(ema_model, n=cfg.train.sample_size, sample_shape=sample_shape, y=None)
                     fig = image_grid(fake, nrow=8, title=f"epoch {epoch}")
                     logger.add_figure("samples/images", fig, step=epoch)
                 else:
-                    fake = ddpm.sample(model, n=cfg.train.sample_size)
+                    fake = ddpm.sample(ema_model, n=cfg.train.sample_size)
                     real_batch = next(iter(dl))[: cfg.train.sample_size].to(device)
                     fig = scatter_2d(real_batch, fake, title=f"epoch {epoch}")
                     logger.add_figure("samples/compare", fig, step=epoch)
@@ -202,9 +228,9 @@ def main() -> None:
                 path=str(ckpt_path),
                 model=model,
                 optimizer=opt,
-                scheduler=None,
+                scheduler=scheduler,
                 scaler=None,
-                ema=None,
+                ema=ema,
                 step=global_step,
                 epoch=epoch,
                 config=cfg_to_dict(cfg),
